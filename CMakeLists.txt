@@ -3,17 +3,19 @@ project(lab2)
 
 set(CMAKE_CXX_STANDARD 20)
 
+find_package(Threads REQUIRED)
+
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.inl
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.inl
 )
 
 # collect all source files
 file(GLOB_RECURSE COMPILATION_UNITS CONFIGURE_DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c++
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.c++
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cc
 )
 
 add_executable(lab2 ${COMPILATION_UNITS} ${HEADERS})
