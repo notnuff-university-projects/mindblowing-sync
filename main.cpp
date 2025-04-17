@@ -14,7 +14,8 @@
 #include <pthread.h>
 #include <chrono>
 
-// well, I understood what are critical sections, how to construct signal and wait sync
+// 1. well, I understood what are critical sections, how to construct signal and wait sync
+// 2. now, I described how threads will interact in program
 int main() {
 
 
