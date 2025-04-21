@@ -19,7 +19,7 @@
 
 int main() {
     Data data;
-    
+
     auto start = std::chrono::high_resolution_clock::now();
     
     T1 t1(data);

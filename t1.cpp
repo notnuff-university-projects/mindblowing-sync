@@ -5,9 +5,22 @@ T1::T1(Data& data) : ThreadBase(data, 0, data.H - 1) {}
 
 void T1::input() {
     std::cout << "T1: Введення MV, MC" << std::endl;
-    // Ініціалізація MV та MC
-    data.MV.resize(data.N, std::vector<int>(data.N, 1));
-    data.MC.resize(data.N, std::vector<int>(data.N, 1));
+    
+    // Ініціалізація MV
+    data.MV.resize(data.N, std::vector<int>(data.N));
+    for (int i = 0; i < data.N; ++i) {
+        for (int j = 0; j < data.N; ++j) {
+            data.MV[i][j] = data.dist(data.gen);
+        }
+    }
+    
+    // Ініціалізація MC
+    data.MC.resize(data.N, std::vector<int>(data.N));
+    for (int i = 0; i < data.N; ++i) {
+        for (int j = 0; j < data.N; ++j) {
+            data.MC[i][j] = data.dist(data.gen);
+        }
+    }
 }
 
 void T1::compute() {

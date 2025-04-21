@@ -5,9 +5,17 @@ T2::T2(Data& data) : ThreadBase(data, data.H, 2 * data.H - 1) {}
 
 void T2::input() {
     std::cout << "T2: Введення e, MM" << std::endl;
-    // Ініціалізація e та MM
-    data.e = 1;
-    data.MM.resize(data.N, std::vector<int>(data.N, 1));
+    
+    // Ініціалізація e
+    data.e = data.dist(data.gen);
+    
+    // Ініціалізація MM
+    data.MM.resize(data.N, std::vector<int>(data.N));
+    for (int i = 0; i < data.N; ++i) {
+        for (int j = 0; j < data.N; ++j) {
+            data.MM[i][j] = data.dist(data.gen);
+        }
+    }
 }
 
 void T2::compute() {

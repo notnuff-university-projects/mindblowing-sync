@@ -4,15 +4,18 @@
 
 Data::Data() {
     H = N / P;
-    A.resize(N);
     t = INT_MAX;  // Ініціалізація t
+    
+    // Ініціалізація генератора випадкових чисел
+    gen.seed(std::time(nullptr));
+    dist = std::uniform_int_distribution<int>(0, 9);
     
     // Ініціалізація м'ютексів
     pthread_mutex_init(&mutex_t, nullptr);
     pthread_mutex_init(&mutex_e, nullptr);
     
     // Ініціалізація бар'єру
-    pthread_barrier_init(&barrier, nullptr, P);
+    pthread_barrier_init(&barrier1, nullptr, P);
     
     // Ініціалізація семафорів
     sem_init(&sem1, 0, 0);
@@ -24,7 +27,7 @@ Data::Data() {
 Data::~Data() {
     pthread_mutex_destroy(&mutex_t);
     pthread_mutex_destroy(&mutex_e);
-    pthread_barrier_destroy(&barrier);
+    pthread_barrier_destroy(&barrier1);
     sem_destroy(&sem1);
     sem_destroy(&sem2);
     sem_destroy(&sem3);
