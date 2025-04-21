@@ -13,10 +13,15 @@ public:
     // Спільні ресурси
     int t;         // КД1
     int e;         // КД3
-    std::vector<int> B;
-    std::vector<int> X;
-    std::vector<std::vector<int>> MM;
-    std::vector<int> A;           // Результат
+    
+    // Матриці та вектори
+    std::vector<std::vector<int>> MV;  // Матриця MV
+    std::vector<std::vector<int>> MC;  // Матриця MC
+    std::vector<std::vector<int>> MM;  // Матриця MM
+    std::vector<int> B;                // Вектор B
+    std::vector<int> X;                // Вектор X
+    std::vector<int> Z;                // Вектор Z
+    std::vector<int> A;                // Результат
 
     // Механізми синхронізації
     pthread_mutex_t mutex_t;      // Для КД1

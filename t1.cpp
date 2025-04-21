@@ -6,8 +6,8 @@ T1::T1(Data& data) : ThreadBase(data, 0, data.H - 1) {}
 void T1::input() {
     std::cout << "T1: Введення MV, MC" << std::endl;
     // Ініціалізація MV та MC
-    MV.resize(data.N, std::vector<int>(data.N, 1));
-    MC.resize(data.N, std::vector<int>(data.N, 1));
+    data.MV.resize(data.N, std::vector<int>(data.N, 1));
+    data.MC.resize(data.N, std::vector<int>(data.N, 1));
 }
 
 void T1::compute() {
@@ -23,10 +23,11 @@ void T1::compute() {
     }
     
     // Обчислення2: t = min(t, ti) - КД1
-    int current_t;
-    do {
-        current_t = data.t.load();
-    } while (ti < current_t && !data.t.compare_exchange_weak(current_t, ti));
+    pthread_mutex_lock(&data.mutex_t);
+    if (ti < data.t) {
+        data.t = ti;
+    }
+    pthread_mutex_unlock(&data.mutex_t);
     
     // Сигнал іншим потокам про завершення Обчислення2
     sem_post(&data.sem1);
@@ -40,7 +41,7 @@ void T1::compute() {
     
     // Копіювання ti = t - КД2
     pthread_mutex_lock(&data.mutex_t);
-    ti = data.t.load();
+    ti = data.t;
     pthread_mutex_unlock(&data.mutex_t);
     
     // Копіювання ei = e - КД3
@@ -49,10 +50,10 @@ void T1::compute() {
     pthread_mutex_unlock(&data.mutex_e);
     
     // Обчислення3: An = ti*(B*MVn) + ei*X*(MM*MCn)
-    std::vector<int> temp1 = Data::multiplyVectorMatrix(data.B, MV);
+    std::vector<int> temp1 = Data::multiplyVectorMatrix(data.B, data.MV);
     std::vector<int> part1 = Data::multiplyVectorScalar(temp1, ti);
     
-    std::vector<std::vector<int>> temp2 = Data::multiplyMatrices(MM, MC);
+    std::vector<std::vector<int>> temp2 = Data::multiplyMatrices(data.MM, data.MC);
     std::vector<int> temp3 = Data::multiplyVectorMatrix(data.X, temp2);
     std::vector<int> part2 = Data::multiplyVectorScalar(temp3, ei);
     
