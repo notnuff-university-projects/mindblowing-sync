@@ -1,30 +1,51 @@
 #include "data.h"
-
-#include <algorithm>
+#include <climits>
 #include <iostream>
-#include <random>
-#include <limits>
-#include <pthread.h>
 
-// Скалярний добуток двох векторів
-double Data::vectorDotProduct(const std::vector<double>& a, const std::vector<double>& b) {
-    double result = 0.0;
-    for (size_t i = 0; i < a.size(); ++i) {
-        result += a[i] * b[i];
+Data::Data() {
+    H = N / P;
+    A.resize(N);
+    t = INT_MAX;  // Ініціалізація t
+    
+    // Ініціалізація м'ютексів
+    pthread_mutex_init(&mutex_t, nullptr);
+    pthread_mutex_init(&mutex_e, nullptr);
+    
+    // Ініціалізація бар'єру
+    pthread_barrier_init(&barrier, nullptr, P);
+    
+    // Ініціалізація семафорів
+    sem_init(&sem1, 0, 0);
+    sem_init(&sem2, 0, 0);
+    sem_init(&sem3, 0, 0);
+    sem_init(&sem4, 0, 0);
+}
+
+Data::~Data() {
+    pthread_mutex_destroy(&mutex_t);
+    pthread_mutex_destroy(&mutex_e);
+    pthread_barrier_destroy(&barrier);
+    sem_destroy(&sem1);
+    sem_destroy(&sem2);
+    sem_destroy(&sem3);
+    sem_destroy(&sem4);
+}
+
+std::vector<int> Data::multiplyVectorMatrix(const std::vector<int>& v, const std::vector<std::vector<int>>& m) {
+    std::vector<int> result(m[0].size(), 0);
+    for (size_t j = 0; j < m[0].size(); ++j) {
+        for (size_t k = 0; k < v.size(); ++k) {
+            result[j] += v[k] * m[k][j];
+        }
     }
     return result;
 }
 
-// Добуток двох матриць
-std::vector<std::vector<double>> Data::multiplyMatrices(
-    const std::vector<std::vector<double>>& a, 
-    const std::vector<std::vector<double>>& b) {
-    
-    std::vector<std::vector<double>> result(N, std::vector<double>(N, 0.0));
-    
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            for (int k = 0; k < N; ++k) {
+std::vector<std::vector<int>> Data::multiplyMatrices(const std::vector<std::vector<int>>& a, const std::vector<std::vector<int>>& b) {
+    std::vector<std::vector<int>> result(a.size(), std::vector<int>(b[0].size(), 0));
+    for (size_t i = 0; i < a.size(); ++i) {
+        for (size_t j = 0; j < b[0].size(); ++j) {
+            for (size_t k = 0; k < a[0].size(); ++k) {
                 result[i][j] += a[i][k] * b[k][j];
             }
         }
@@ -32,179 +53,26 @@ std::vector<std::vector<double>> Data::multiplyMatrices(
     return result;
 }
 
-// Добуток вектора на матрицю
-std::vector<double> Data::multiplyMatrixVector(
-    const std::vector<std::vector<double>>& matrix, 
-    const std::vector<double>& vec) {
-    
-    std::vector<double> result(N, 0.0);
-    
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            result[i] += matrix[i][j] * vec[j];
-        }
+int Data::scalarProduct(const std::vector<int>& a, const std::vector<int>& b) {
+    int result = 0;
+    for (size_t i = 0; i < a.size(); ++i) {
+        result += a[i] * b[i];
     }
     return result;
 }
 
-// Транспонування матриці
-std::vector<std::vector<double>> Data::transposeMatrix(
-    const std::vector<std::vector<double>>& matrix) {
-    
-    std::vector<std::vector<double>> result(N, std::vector<double>(N));
-    
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            result[i][j] = matrix[j][i];
-        }
+std::vector<int> Data::multiplyVectorScalar(const std::vector<int>& v, int s) {
+    std::vector<int> result(v.size());
+    for (size_t i = 0; i < v.size(); ++i) {
+        result[i] = v[i] * s;
     }
     return result;
 }
 
-// Сортування вектора
-std::vector<double> Data::sortVector(const std::vector<double>& vec) {
-    std::vector<double> result = vec;
-    std::sort(result.begin(), result.end());
+std::vector<int> Data::addVectors(const std::vector<int>& a, const std::vector<int>& b) {
+    std::vector<int> result(a.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+        result[i] = a[i] + b[i];
+    }
     return result;
-}
-
-std::vector<double> Data::generateRandomVector() const {
-    std::vector<double> vector(N);
-    for (int i = 0; i < N; ++i) {
-        vector[i] = static_cast<double>(dis(gen));
-    }
-    return vector;
-}
-
-std::vector<std::vector<double>> Data::generateRandomMatrix() const {
-    std::vector<std::vector<double>> matrix(N, std::vector<double>(N));
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            matrix[i][j] = static_cast<double>(dis(gen));
-        }
-    }
-    return matrix;
-}
-
-std::vector<double> Data::getVectorFromConsole(const std::string& vectorName) const {
-    std::vector<double> result(N);
-    
-    // Захоплення мютексу перед введенням
-    pthread_mutex_lock(&inputMutex);
-    
-    for (int i = 0; i < N; i++) {
-        std::cout << "Введіть елемент " << vectorName << "[" << i << "]: ";
-        while (!(std::cin >> result[i])) {
-            std::cout << "Помилка! Введіть число: ";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
-    }
-    
-    // Звільнення мютексу після введення
-    pthread_mutex_unlock(&inputMutex);
-    
-    return result;
-}
-
-std::vector<std::vector<double>> Data::getMatrixFromConsole(const std::string& matrixName) const {
-    std::vector<std::vector<double>> result(N, std::vector<double>(N));
-    
-    // Захоплення мютексу перед введенням
-    pthread_mutex_lock(&inputMutex);
-    
-    for (int i = 0; i < N; i++) {
-        std::cout << "\nВведення рядка " << matrixName << "[" << i << "]:\n";
-        for (int j = 0; j < N; j++) {
-            std::cout << "Введіть елемент " << matrixName << "[" << i << "][" << j << "]: ";
-            while (!(std::cin >> result[i][j])) {
-                std::cout << "Помилка! Введіть число: ";
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            }
-        }
-    }
-    
-    // Звільнення мютексу після введення
-    pthread_mutex_unlock(&inputMutex);
-    
-    return result;
-}
-
-void Data::printVector(const std::string& vectorName, const std::vector<double>& vec) const {
-    pthread_mutex_lock(&outputMutex);
-    std::cout << "\nРезультат " << vectorName << ":\n";
-    for (int i = 0; i < N; i++) {
-        std::cout << vectorName << "[" << i << "] = " << vec[i] << "\n";
-    }
-    outputReady = true;
-    pthread_cond_signal(&outputCondition);
-    pthread_mutex_unlock(&outputMutex);
-}
-
-void Data::printMatrix(const std::string& matrixName, const std::vector<std::vector<double>>& matrix) const {
-    pthread_mutex_lock(&outputMutex);
-    std::cout << "\nРезультат " << matrixName << ":\n";
-    
-    if (mode == Mode::BigNum) {
-        printShortenMatrix(matrixName, matrix);
-    } else {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                std::cout << matrixName << "[" << i << "][" << j << "] = " << matrix[i][j] << "\t";
-            }
-            std::cout << "\n";
-        }
-    }
-    
-    outputReady = true;
-    pthread_cond_signal(&outputCondition);
-    pthread_mutex_unlock(&outputMutex);
-}
-
-void Data::printShortenMatrix(const std::string& matrixName, const std::vector<std::vector<double>>& matrix) const {
-    // Виведення перших 5 рядків
-    for (int i = 0; i < std::min(5, N); i++) {
-        // Виведення перших 5 елементів
-        for (int j = 0; j < std::min(5, N); j++) {
-            std::cout << matrixName << "[" << i << "][" << j << "] = " << matrix[i][j] << "\t";
-        }
-        // Виведення останніх 5 елементів
-        if (N > 5) {
-            std::cout << "...\t";
-            for (int j = std::max(5, N-5); j < N; j++) {
-                std::cout << matrixName << "[" << i << "][" << j << "] = " << matrix[i][j] << "\t";
-            }
-        }
-        std::cout << "\n";
-    }
-    
-    // Виведення останніх 5 рядків
-    if (N > 5) {
-        std::cout << "...\n";
-        for (int i = std::max(5, N-5); i < N; i++) {
-            // Виведення перших 5 елементів
-            for (int j = 0; j < std::min(5, N); j++) {
-                std::cout << matrixName << "[" << i << "][" << j << "] = " << matrix[i][j] << "\t";
-            }
-            // Виведення останніх 5 елементів
-            if (N > 5) {
-                std::cout << "...\t";
-                for (int j = std::max(5, N-5); j < N; j++) {
-                    std::cout << matrixName << "[" << i << "][" << j << "] = " << matrix[i][j] << "\t";
-                }
-            }
-            std::cout << "\n";
-        }
-    }
-}
-
-void Data::waitForOutput() const {
-    pthread_mutex_lock(&outputMutex);
-    while (!outputReady) {
-        pthread_cond_wait(&outputCondition, &outputMutex);
-    }
-    outputReady = false;
-    pthread_mutex_unlock(&outputMutex);
-}
-
+} 

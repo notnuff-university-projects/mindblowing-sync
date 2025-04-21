@@ -1,51 +1,38 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include <vector>
-#include <random>
-#include <string>
 #include <pthread.h>
-#include <iostream>
+#include <vector>
 
 class Data {
 public:
-    // Службові функції для роботи з векторами та матрицями
-    double vectorDotProduct(const std::vector<double>& a, const std::vector<double>& b);
-    std::vector<std::vector<double>> multiplyMatrices(const std::vector<std::vector<double>>& a, const std::vector<std::vector<double>>& b);
-    std::vector<double> multiplyMatrixVector(const std::vector<std::vector<double>>& matrix, const std::vector<double>& vec);
-    std::vector<std::vector<double>> transposeMatrix(const std::vector<std::vector<double>>& matrix);
-    std::vector<double> sortVector(const std::vector<double>& vec);
+    int N = 1000;  // Розмірність векторів та матриць
+    int P = 4;     // Кількість потоків
+    int H;         // Розмір частини для кожного потоку
 
-    std::vector<double> getVector() const;
-    std::vector<std::vector<double>> getMatrix() const;
+    // Спільні ресурси
+    int t;         // КД1
+    int e;         // КД3
+    std::vector<int> B;
+    std::vector<int> X;
+    std::vector<std::vector<int>> MM;
+    std::vector<int> A;           // Результат
 
-    // Функції для генерації випадкових даних
-    std::vector<double> generateRandomVector() const;
-    std::vector<std::vector<double>> generateRandomMatrix() const;
+    // Механізми синхронізації
+    pthread_mutex_t mutex_t;      // Для КД1
+    pthread_mutex_t mutex_e;      // Для КД3
+    pthread_barrier_t barrier;    // Для синхронізації введення
+    pthread_sem_t sem1, sem2, sem3, sem4;  // Семафори для сигналів між потоками
 
-    // Функції для введення даних з клавіатури
-    std::vector<double> getVectorFromConsole(const std::string& vectorName) const;
-    std::vector<std::vector<double>> getMatrixFromConsole(const std::string& matrixName) const;
+    Data();
+    ~Data();
 
-    // Функції для синхронізованого виводу
-    void printVector(const std::string& vectorName, const std::vector<double>& vec) const;
-    void printMatrix(const std::string& matrixName, const std::vector<std::vector<double>>& matrix) const;
-    void printShortenMatrix(const std::string& matrixName, const std::vector<std::vector<double>>& matrix) const;
-    void waitForOutput() const;
-
-    Mode mode;
-    int N;  // Розмір векторів та матриць
-
-    mutable pthread_mutex_t inputMutex;
-    mutable pthread_mutex_t outputMutex;
-    mutable pthread_cond_t outputCondition;
-    mutable bool outputReady;
-
-private:
-    // Генератор випадкових чисел
-    mutable std::random_device rd;
-    mutable std::mt19937 gen;
-    mutable std::uniform_int_distribution<int> dis;
+    // Допоміжні методи
+    static std::vector<int> multiplyVectorMatrix(const std::vector<int>& v, const std::vector<std::vector<int>>& m);
+    static std::vector<std::vector<int>> multiplyMatrices(const std::vector<std::vector<int>>& a, const std::vector<std::vector<int>>& b);
+    static int scalarProduct(const std::vector<int>& a, const std::vector<int>& b);
+    static std::vector<int> multiplyVectorScalar(const std::vector<int>& v, int s);
+    static std::vector<int> addVectors(const std::vector<int>& a, const std::vector<int>& b);
 };
 
-#endif //DATA_H
+#endif // DATA_H 
