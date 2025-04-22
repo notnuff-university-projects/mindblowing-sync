@@ -2,8 +2,9 @@
 #define THREAD_BASE_H
 
 #include "data.h"
+#include "tthread.h"
 
-class ThreadBase  {
+class ThreadBase : public TThread {
 protected:
     Data& data;
     int from;
@@ -14,7 +15,7 @@ public:
     virtual ~ThreadBase() = default;
 
 public:
-    void run_thread();
+    virtual void run_thread() override;
 
 protected:
 

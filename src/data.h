@@ -5,7 +5,7 @@
 #include <vector>
 #include <random>
 #include <ctime>
-#include <bits/semaphore.h>
+#include <semaphore>
 
 using TVector = std::vector<int>;
 using TMatrix = std::vector<TVector>;
@@ -55,7 +55,7 @@ public:
 
 
     // Механізми синхронізації
-    pthread_mutex_t mutex_t;      // Для КД1
+    pthread_mutex_t mutex_t;      // Для КД1 та КД2
     pthread_mutex_t mutex_e;      // Для КД3
     pthread_barrier_t barrier1;   // Для синхронізації введення
     sem_t sem1_1, sem2_1, sem3_1, sem4_1;  // Семафори для сигналів між потоками

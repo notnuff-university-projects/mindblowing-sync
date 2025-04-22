@@ -1,6 +1,6 @@
 #include "t1.h"
 #include <iostream>
-#include <semaphore.h>
+#include <semaphore>
 
 T1::T1(Data& data) : ThreadBase(data, 0, data.H - 1) {}
 

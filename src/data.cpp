@@ -1,7 +1,7 @@
 #include "data.h"
 #include <climits>
 #include <iostream>
-#include <semaphore.h>
+#include <semaphore>
 
 Data::Data() {
     H = N / P;
