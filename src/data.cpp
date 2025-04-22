@@ -59,8 +59,8 @@ const int Data::multiplyVectorByVector(const TVector& v1, const TVector& v2) {
 }
 
 // Сума двох векторів
-const TVector& Data::addVectors(const TVector& v1, const TVector& v2) {
-    static TVector result;
+TVector Data::addVectors(const TVector& v1, const TVector& v2) {
+    TVector result;
     if (v1.size() != v2.size())
         throw std::invalid_argument("Vectors must have the same size");
 
@@ -71,46 +71,55 @@ const TVector& Data::addVectors(const TVector& v1, const TVector& v2) {
     return result;
 }
 
-// Частковий добуток вектора на матрицю (рядки з from до to)
-const std::vector<int>& Data::multiplyVectorByMatrixRange(const TVector& v, const TMatrix& m, int from, int to) {
-    static std::vector<int> result;
+// Частковий добуток вектора на матрицю (стовпці з from до to)
+std::vector<int> Data::multiplyVectorByMatrixRange(const TVector& v, const TMatrix& m, int from, int to) {
+    std::vector<int> result;
     if (v.size() != m[0].size())
         throw std::invalid_argument("Vector size must match matrix column count");
 
-    result.resize(to - from);
-    for (int i = from; i < to; ++i) {
-        int sum = 0;
-        for (size_t j = 0; j < v.size(); ++j) {
-            sum += v[j] * m[i][j];
-        }
-        result[i - from] = sum;
+    auto extend = to - from + 1;
+    result.resize(extend);
+    for (int i = 0; i < extend; ++i) {
+        auto columnI = from + i;
+        const auto& column = m[columnI];
+
+        result[i] = multiplyVectorByVector(v, column);
     }
+
     return result;
 }
 
-// Частковий добуток матриці на матрицю (рядки з from до to)
-const std::vector<TVector>& Data::multiplyMatrixByMatrixRange(const TMatrix& m1, const TMatrix& m2, int from, int to) {
-    static std::vector<TVector> result;
-    int N = m1.size();
-    int M = m2[0].size();
-    int K = m2.size();
+// Частковий добуток матриці на матрицю (стовпці з from до to)
+std::vector<TVector> Data::multiplyMatrixByMatrixRange(const TMatrix& m1, const TMatrix& m2, int from, int to) {
+    std::vector<TVector> result;
 
-    result.resize(to - from);
-    for (int i = from; i < to; ++i) {
-        result[i - from].resize(M);
-        for (int j = 0; j < M; ++j) {
+    int rows = m1[0].size();     // Кількість рядків у m1
+    int cols = m1.size();        // Кількість стовпців у m1 == кількість рядків у m2
+    int extend = to - from + 1;  // Кількість стовпців у результаті
+
+    result.resize(extend, TVector(rows, 0));
+
+    // Ітеруємо по кожному стовпцю з діапазону [from, to]
+    for (int j = from; j <= to; ++j) {
+        const TVector& colM2 = m2[j]; // Стовпець з m2
+        TVector& colRes = result[j - from]; // Відповідний стовпець у результаті
+
+        // Для кожного рядка результатного стовпця
+        for (int i = 0; i < rows; ++i) {
             int sum = 0;
-            for (int k = 0; k < K; ++k) {
-                sum += m1[i][k] * m2[k][j];
+            // Добуток відповідного рядка з m1 та стовпця з m2
+            for (int k = 0; k < cols; ++k) {
+                sum += m1[k][i] * colM2[k];
             }
-            result[i - from][j] = sum;
+            colRes[i] = sum;
         }
     }
+
     return result;
 }
 
 // Множення матриці на скаляр
-const TMatrix& Data::multiplyByScalar(const TMatrix& m, int s) {
+TMatrix Data::multiplyByScalar(const TMatrix& m, int s) {
     static TMatrix result;
     result.resize(m.size());
     for (size_t i = 0; i < m.size(); ++i) {
@@ -123,7 +132,7 @@ const TMatrix& Data::multiplyByScalar(const TMatrix& m, int s) {
 }
 
 // Множення вектора на скаляр
-const TVector& Data::multiplyByScalar(const TVector& v, int s) {
+TVector Data::multiplyByScalar(const TVector& v, int s) {
     static TVector result;
     result.resize(v.size());
     for (size_t i = 0; i < v.size(); ++i) {

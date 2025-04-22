@@ -53,7 +53,9 @@ void ThreadBase::compute_An_local() {
     const auto& MM_local = data.MM;
     const auto& X_local = data.X;
     const auto& MM_MCn = Data::multiplyMatrixByMatrixRange(MM_local, data.MC, from, to);
-    const auto& X_MM_MCn = Data::multiplyVectorByMatrixRange(X_local, MM_MCn, from, to);
+
+    // TODO: create function when matrix is smaller then vector
+    const auto& X_MM_MCn = Data::multiplyVectorByMatrixRange(X_local, MM_MCn, 0, to - from + 1);
     const auto& e_X_MM_MCn = Data::multiplyByScalar(X_MM_MCn, ei);
     const auto& right = e_X_MM_MCn;
 

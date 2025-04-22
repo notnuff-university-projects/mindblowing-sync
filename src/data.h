@@ -20,17 +20,17 @@ public:
     static const int multiplyVectorByVector(const TVector& v1, const TVector& v2);
 
     // Використовуємо для отримання A[from, to]
-    static const TVector& addVectors(const TVector& v1, const TVector& v2);
+    static TVector addVectors(const TVector& v1, const TVector& v2);
 
     // Використовуємо для B * MV[from, to]
-    static const std::vector<int>& multiplyVectorByMatrixRange(const TVector& v1, const TMatrix& m, int from, int to);
+    static TVector multiplyVectorByMatrixRange(const TVector& v1, const TMatrix& m, int from, int to);
 
     // Використовуємо для MM*MC[from, to]
-    static const std::vector<TVector>& multiplyMatrixByMatrixRange(const TMatrix& v1, const TMatrix& m, int from, int to);
+    static std::vector<TVector> multiplyMatrixByMatrixRange(const TMatrix& v1, const TMatrix& m, int from, int to);
 
     // Використовуємо для e*X
-    static const TMatrix& multiplyByScalar(const TMatrix& v, int s);
-    static const TVector& multiplyByScalar(const TVector& v, int s);
+    static TMatrix multiplyByScalar(const TMatrix& v, int s);
+    static TVector multiplyByScalar(const TVector& v, int s);
 
 
 public:
