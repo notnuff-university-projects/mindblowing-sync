@@ -5,9 +5,12 @@
 
 class T1 : public ThreadBase {
 public:
-    T1(Data& data);
-    void input() override;
-    void compute() override;
+    explicit T1(Data& data);
+
+protected:
+    virtual void input() override;
+    virtual void after_compute_t_sync() override;
+    virtual void after_compute_An_sync() override;
 };
 
 #endif // T1_H 

@@ -20,13 +20,12 @@ void T3::input() {
 void T3::compute() {
     std::cout << "T3: Початок обчислень" << std::endl;
     
-    compute_t();
 
     // Сигнал іншим потокам про завершення Обчислення2
     sem_post(&data.sem3);
     sem_post(&data.sem3);
     sem_post(&data.sem3);
-    
+
     // Чекаємо на завершення Обчислення2 в інших потоках
     sem_wait(&data.sem1);
     sem_wait(&data.sem2);

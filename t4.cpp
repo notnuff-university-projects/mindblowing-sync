@@ -23,7 +23,6 @@ void T4::input() {
 void T4::compute() {
     std::cout << "T4: Початок обчислень" << std::endl;
 
-    compute_t();
 
     // Сигнал іншим потокам про завершення Обчислення2
     sem_post(&data.sem4);
@@ -34,27 +33,18 @@ void T4::compute() {
     sem_wait(&data.sem1);
     sem_wait(&data.sem2);
     sem_wait(&data.sem3);
-    
-    // Копіювання ti = t - КД2
-    pthread_mutex_lock(&data.mutex_t);
-    auto ti = data.t;
-    pthread_mutex_unlock(&data.mutex_t);
-    
-    // Копіювання ei = e - КД3
-    pthread_mutex_lock(&data.mutex_e);
-    auto ei = data.e;
-    pthread_mutex_unlock(&data.mutex_e);
+
     
     // Обчислення3: An = ti*(B*MVn) + ei*X*(MM*MCn)
     std::vector<int> temp1 = Data::multiplyVectorMatrix(data.B, data.MV);
     std::vector<int> part1 = Data::multiplyVectorScalar(temp1, ti);
-    
+
     std::vector<std::vector<int>> temp2 = Data::multiplyMatrices(data.MM, data.MC);
     std::vector<int> temp3 = Data::multiplyVectorMatrix(data.X, temp2);
     std::vector<int> part2 = Data::multiplyVectorScalar(temp3, ei);
-    
+
     std::vector<int> result = Data::addVectors(part1, part2);
-    
+
     // Збереження результату у відповідній частині A
     for (int i = from; i <= to; ++i) {
         data.A[i] = result[i - from];

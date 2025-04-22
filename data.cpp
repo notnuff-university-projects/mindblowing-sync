@@ -1,6 +1,7 @@
 #include "data.h"
 #include <climits>
 #include <iostream>
+#include <semaphore.h>
 
 Data::Data() {
     H = N / P;
@@ -18,64 +19,119 @@ Data::Data() {
     pthread_barrier_init(&barrier1, nullptr, P);
     
     // Ініціалізація семафорів
-    sem_init(&sem1, 0, 0);
-    sem_init(&sem2, 0, 0);
-    sem_init(&sem3, 0, 0);
-    sem_init(&sem4, 0, 0);
+    sem_init(&sem1_1, 0, 0);
+    sem_init(&sem2_1, 0, 0);
+    sem_init(&sem3_1, 0, 0);
+    sem_init(&sem4_1, 0, 0);
+
+    sem_init(&sem1_2, 0, 0);
+    sem_init(&sem2_2, 0, 0);
+    sem_init(&sem3_2, 0, 0);
+    sem_init(&sem4_2, 0, 0);
 }
 
 Data::~Data() {
     pthread_mutex_destroy(&mutex_t);
     pthread_mutex_destroy(&mutex_e);
     pthread_barrier_destroy(&barrier1);
-    sem_destroy(&sem1);
-    sem_destroy(&sem2);
-    sem_destroy(&sem3);
-    sem_destroy(&sem4);
+
+    sem_destroy(&sem1_1);
+    sem_destroy(&sem2_1);
+    sem_destroy(&sem3_1);
+    sem_destroy(&sem4_1);
+
+    sem_destroy(&sem1_2);
+    sem_destroy(&sem2_2);
+    sem_destroy(&sem3_2);
+    sem_destroy(&sem4_2);
 }
 
-std::vector<int> Data::multiplyVectorMatrix(const std::vector<int>& v, const std::vector<std::vector<int>>& m) {
-    std::vector<int> result(m[0].size(), 0);
-    for (size_t j = 0; j < m[0].size(); ++j) {
-        for (size_t k = 0; k < v.size(); ++k) {
-            result[j] += v[k] * m[k][j];
-        }
-    }
-    return result;
-}
+// Скалярний добуток двох векторів
+const int Data::multiplyVectorByVector(const TVector& v1, const TVector& v2) {
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("Vectors must have the same size");
 
-std::vector<std::vector<int>> Data::multiplyMatrices(const std::vector<std::vector<int>>& a, const std::vector<std::vector<int>>& b) {
-    std::vector<std::vector<int>> result(a.size(), std::vector<int>(b[0].size(), 0));
-    for (size_t i = 0; i < a.size(); ++i) {
-        for (size_t j = 0; j < b[0].size(); ++j) {
-            for (size_t k = 0; k < a[0].size(); ++k) {
-                result[i][j] += a[i][k] * b[k][j];
-            }
-        }
-    }
-    return result;
-}
-
-int Data::scalarProduct(const std::vector<int>& a, const std::vector<int>& b) {
     int result = 0;
-    for (size_t i = 0; i < a.size(); ++i) {
-        result += a[i] * b[i];
+    for (size_t i = 0; i < v1.size(); ++i) {
+        result += v1[i] * v2[i];
     }
     return result;
 }
 
-std::vector<int> Data::multiplyVectorScalar(const std::vector<int>& v, int s) {
-    std::vector<int> result(v.size());
+// Сума двох векторів
+const TVector& Data::addVectors(const TVector& v1, const TVector& v2) {
+    static TVector result;
+    if (v1.size() != v2.size())
+        throw std::invalid_argument("Vectors must have the same size");
+
+    result.resize(v1.size());
+    for (size_t i = 0; i < v1.size(); ++i) {
+        result[i] = v1[i] + v2[i];
+    }
+    return result;
+}
+
+// Частковий добуток вектора на матрицю (рядки з from до to)
+const std::vector<int>& Data::multiplyVectorByMatrixRange(const TVector& v, const TMatrix& m, int from, int to) {
+    static std::vector<int> result;
+    if (v.size() != m[0].size())
+        throw std::invalid_argument("Vector size must match matrix column count");
+
+    result.resize(to - from);
+    for (int i = from; i < to; ++i) {
+        int sum = 0;
+        for (size_t j = 0; j < v.size(); ++j) {
+            sum += v[j] * m[i][j];
+        }
+        result[i - from] = sum;
+    }
+    return result;
+}
+
+// Частковий добуток матриці на матрицю (рядки з from до to)
+const std::vector<TVector>& Data::multiplyMatrixByMatrixRange(const TMatrix& m1, const TMatrix& m2, int from, int to) {
+    static std::vector<TVector> result;
+    int N = m1.size();
+    int M = m2[0].size();
+    int K = m2.size();
+
+    result.resize(to - from);
+    for (int i = from; i < to; ++i) {
+        result[i - from].resize(M);
+        for (int j = 0; j < M; ++j) {
+            int sum = 0;
+            for (int k = 0; k < K; ++k) {
+                sum += m1[i][k] * m2[k][j];
+            }
+            result[i - from][j] = sum;
+        }
+    }
+    return result;
+}
+
+// Множення матриці на скаляр
+const TMatrix& Data::multiplyByScalar(const TMatrix& m, int s) {
+    static TMatrix result;
+    result.resize(m.size());
+    for (size_t i = 0; i < m.size(); ++i) {
+        result[i].resize(m[i].size());
+        for (size_t j = 0; j < m[i].size(); ++j) {
+            result[i][j] = m[i][j] * s;
+        }
+    }
+    return result;
+}
+
+// Множення вектора на скаляр
+const TVector& Data::multiplyByScalar(const TVector& v, int s) {
+    static TVector result;
+    result.resize(v.size());
     for (size_t i = 0; i < v.size(); ++i) {
         result[i] = v[i] * s;
     }
     return result;
 }
 
-std::vector<int> Data::addVectors(const std::vector<int>& a, const std::vector<int>& b) {
-    std::vector<int> result(a.size());
-    for (size_t i = 0; i < a.size(); ++i) {
-        result[i] = a[i] + b[i];
-    }
-    return result;
-} 
+int Data::GetRandomNumber() {
+    return dist(gen);
+}
