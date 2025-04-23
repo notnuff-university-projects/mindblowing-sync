@@ -24,6 +24,7 @@ public:
 
     // Використовуємо для B * MV[from, to]
     static TVector multiplyVectorByMatrixRange(const TVector& v1, const TMatrix& m, int from, int to);
+    static TVector multiplyVectorByMatrixPart(const TVector& v, const TMatrix& m);
 
     // Використовуємо для MM*MC[from, to]
     static std::vector<TVector> multiplyMatrixByMatrixRange(const TMatrix& v1, const TMatrix& m, int from, int to);

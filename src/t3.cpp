@@ -8,6 +8,11 @@ T3::T3(Data& data) : ThreadBase(data, 2 * data.H, 3 * data.H - 1) {}
 void T3::execute() {
     // В execute ми вже завершили чекати на інші потоки, тому можемо просто вивести A
     ThreadBase::execute();
+
+    std::cout << "A is: \n";
+    for (int a : data.A) {
+        std::cout << a << "\n";
+    }
 }
 
 void T3::input() {
@@ -18,6 +23,8 @@ void T3::input() {
     for (int i = 0; i < data.N; ++i) {
         data.Z[i] = data.GetRandomNumber();
     }
+
+    data.A.resize(data.N);
 }
 
 void T3::after_compute_t_sync() {

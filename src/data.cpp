@@ -71,17 +71,32 @@ TVector Data::addVectors(const TVector& v1, const TVector& v2) {
     return result;
 }
 
-// Частковий добуток вектора на матрицю (стовпці з from до to)
+// Частковий добуток вектора на матрицю, стовпці у діапазоні [from; to]
 std::vector<int> Data::multiplyVectorByMatrixRange(const TVector& v, const TMatrix& m, int from, int to) {
     std::vector<int> result;
     if (v.size() != m[0].size())
         throw std::invalid_argument("Vector size must match matrix column count");
 
-    auto extend = to - from + 1;
-    result.resize(extend);
-    for (int i = 0; i < extend; ++i) {
+    auto extend = to - from;
+    result.resize(extend + 1);
+    for (int i = 0; i <= extend; ++i) {
         auto columnI = from + i;
         const auto& column = m[columnI];
+
+        result[i] = multiplyVectorByVector(v, column);
+    }
+
+    return result;
+}
+
+TVector Data::multiplyVectorByMatrixPart(const TVector &v, const TMatrix &m) {
+    std::vector<int> result;
+    if (v.size() != m[0].size())
+        throw std::invalid_argument("Vector size must match matrix column count");
+
+    result.resize(m.size());
+    for (int i = 0; i < m.size(); ++i) {
+        const auto& column = m[i];
 
         result[i] = multiplyVectorByVector(v, column);
     }
@@ -95,9 +110,9 @@ std::vector<TVector> Data::multiplyMatrixByMatrixRange(const TMatrix& m1, const 
 
     int rows = m1[0].size();     // Кількість рядків у m1
     int cols = m1.size();        // Кількість стовпців у m1 == кількість рядків у m2
-    int extend = to - from + 1;  // Кількість стовпців у результаті
+    int extend = to - from;  // Кількість стовпців у результаті
 
-    result.resize(extend, TVector(rows, 0));
+    result.resize(extend + 1, TVector(rows, 0));
 
     // Ітеруємо по кожному стовпцю з діапазону [from, to]
     for (int j = from; j <= to; ++j) {
