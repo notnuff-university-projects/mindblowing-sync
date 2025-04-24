@@ -9,7 +9,7 @@ Data::Data() {
     
     // Ініціалізація генератора випадкових чисел
     gen.seed(std::time(nullptr));
-    dist = std::uniform_int_distribution<int>(0, 9);
+    dist = std::uniform_int_distribution<int>(0, 99);
     
     // Ініціалізація м'ютексів
     pthread_mutex_init(&mutex_t, nullptr);
