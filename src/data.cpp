@@ -26,7 +26,6 @@ Data::Data() {
 
     sem_init(&sem1_2, 0, 0);
     sem_init(&sem2_2, 0, 0);
-    sem_init(&sem3_2, 0, 0);
     sem_init(&sem4_2, 0, 0);
 }
 
@@ -42,7 +41,6 @@ Data::~Data() {
 
     sem_destroy(&sem1_2);
     sem_destroy(&sem2_2);
-    sem_destroy(&sem3_2);
     sem_destroy(&sem4_2);
 }
 
